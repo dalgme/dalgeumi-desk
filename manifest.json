@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "달그미데스크",
+  "version": "0.1.0",
+  "description": "팀 공유 북마크 시작페이지 (내부용)",
+  "minimum_chrome_version": "120",
+  "chrome_url_overrides": {
+    "newtab": "src/newtab/index.html"
+  },
+  "permissions": ["identity", "storage"],
+  "host_permissions": [
+    "https://*.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "src/background/sw.ts",
+    "type": "module"
+  }
+}
