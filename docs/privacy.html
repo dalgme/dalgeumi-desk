@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <title>달그미데스크 개인정보 처리방침</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Malgun Gothic', sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #222; }
+    h1 { border-bottom: 2px solid #3b82f6; padding-bottom: 0.4rem; }
+    h2 { margin-top: 1.8rem; }
+    code { background: #f3f4f6; padding: 0.1em 0.3em; border-radius: 3px; }
+    small { color: #6b7280; }
+  </style>
+</head>
+<body>
+  <h1>달그미데스크 개인정보 처리방침</h1>
+  <small>최종 개정: 2026-04-24 · 배포 주체: 넥스트랩(NextLab)</small>
+
+  <h2>1. 개요</h2>
+  <p>달그미데스크(이하 "확장")는 팀 내부에서 사용하는 개인 북마크 시작페이지 Chrome 확장입니다. 확장은 사용자가 입력한 북마크·섹션 데이터를 Supabase 서버에 저장하며, 그 외의 개인정보는 수집하지 않습니다.</p>
+
+  <h2>2. 수집하는 정보</h2>
+  <ul>
+    <li><strong>이메일 주소</strong>: 로그인 식별자. Supabase Auth 가 관리.</li>
+    <li><strong>북마크·섹션 데이터</strong>: 사용자가 직접 입력한 제목·URL·카테고리명.</li>
+    <li><strong>세션 토큰</strong>: 자동 로그인을 위해 브라우저 localStorage 와 IndexedDB 에 저장.</li>
+  </ul>
+  <p>확장은 다음을 수집·저장·전송하지 <em>않습니다</em>:</p>
+  <ul>
+    <li>방문 기록, 탭 내용, 키 입력</li>
+    <li>위치 정보, 연락처, 결제 정보</li>
+    <li>분석·광고용 추적 데이터</li>
+  </ul>
+
+  <h2>3. 데이터 저장 위치</h2>
+  <ul>
+    <li>서버: Supabase (지역 <code>ap-northeast-2</code>, 서울) PostgreSQL. 행 수준 보안(Row-Level Security) 정책으로 본인 데이터만 접근 가능.</li>
+    <li>로컬: 브라우저 IndexedDB 오프라인 캐시 (본인 PC 내부).</li>
+  </ul>
+
+  <h2>4. 제3자 공유</h2>
+  <p>확장은 사용자 데이터를 어떤 제3자와도 공유하지 않습니다. 단, Supabase 가 데이터 저장 인프라로서 관여합니다. Supabase 의 개인정보 처리방침은 <a href="https://supabase.com/privacy">https://supabase.com/privacy</a> 에서 확인 가능합니다.</p>
+
+  <h2>5. 사용자 권리</h2>
+  <ul>
+    <li>Dashboard 에서 각 항목을 삭제 가능.</li>
+    <li>계정 삭제 요청 시 관리자(<a href="mailto:jinkidi@gmail.com">jinkidi@gmail.com</a>)에게 이메일 보내주시면 Supabase 에서 해당 사용자·데이터 영구 삭제 처리.</li>
+  </ul>
+
+  <h2>6. 변경 내역</h2>
+  <ul>
+    <li>2026-04-24: 최초 공개</li>
+  </ul>
+
+  <h2>7. 문의</h2>
+  <p><a href="mailto:jinkidi@gmail.com">jinkidi@gmail.com</a></p>
+</body>
+</html>

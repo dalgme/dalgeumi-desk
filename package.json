@@ -9,17 +9,20 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "zip": "node scripts/zip-dist.mjs",
-    "qa:backend": "node qa/backend.mjs"
+    "qa:backend": "node qa/backend.mjs",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
-    "preact": "^10.22.0",
     "@supabase/supabase-js": "^2.45.0",
-    "idb-keyval": "^6.2.1"
+    "idb-keyval": "^6.2.1",
+    "preact": "^10.22.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.25",
     "@preact/preset-vite": "^2.8.2",
     "@types/chrome": "^0.0.268",
+    "archiver": "^7.0.1",
+    "sharp": "^0.34.5",
     "typescript": "^5.5.0",
     "vite": "^5.4.0"
   }
