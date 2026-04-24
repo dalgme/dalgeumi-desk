@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "zip": "node scripts/zip-dist.mjs"
+    "zip": "node scripts/zip-dist.mjs",
+    "qa:backend": "node qa/backend.mjs"
   },
   "dependencies": {
     "preact": "^10.22.0",
