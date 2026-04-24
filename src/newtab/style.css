@@ -25,18 +25,47 @@ body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; 
   min-height: 60vh; gap: 0.75rem;
 }
 .login h1 { margin: 0; font-size: 2rem; }
-.login p { color: var(--muted); margin: 0; }
+.login .subtitle, .login .hint { color: var(--muted); margin: 0; max-width: 340px; text-align: center; }
+.login form { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; width: 300px; }
+.login input {
+  padding: 0.6rem 0.8rem; font-size: 1rem; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--card); color: var(--text);
+}
+.login input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 .login button {
-  margin-top: 1rem; padding: 0.75rem 1.5rem; font-size: 1rem;
+  padding: 0.65rem 1.25rem; font-size: 1rem;
   background: var(--accent); color: white; border: 0; border-radius: 6px; cursor: pointer;
 }
-.login button:hover { filter: brightness(1.1); }
+.login button:hover:not(:disabled) { filter: brightness(1.1); }
+.login button:disabled { opacity: 0.5; cursor: not-allowed; }
+.login button.link {
+  background: transparent; color: var(--muted); text-decoration: underline; padding: 0.25rem;
+}
+.login .error {
+  color: #dc2626; background: #fee2e2; padding: 0.5rem 0.75rem; border-radius: 6px;
+  margin-top: 0.5rem; max-width: 300px; font-size: 0.9rem; text-align: center;
+}
 
 .dashboard { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
 .dashboard header {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;
 }
-.dashboard header h1 { margin: 0; font-size: 1.25rem; }
+.dashboard header h1 { margin: 0; font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem; }
+.offline-badge {
+  display: inline-block; padding: 0.15rem 0.5rem; font-size: 0.7rem;
+  background: #f59e0b; color: white; border-radius: 999px;
+}
+.error-banner {
+  margin-bottom: 1rem; padding: 0.6rem 1rem; background: #fee2e2; color: #991b1b;
+  border-radius: 6px; font-size: 0.9rem;
+}
+.favicon-fallback {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; background: var(--accent); color: white;
+  font-size: 0.7rem; border-radius: 3px; flex-shrink: 0;
+}
+.sections li { gap: 0.5rem; }
+.sections li img { flex-shrink: 0; }
 .dashboard .user { display: flex; gap: 0.5rem; align-items: center; }
 .dashboard .user .email { color: var(--muted); font-size: 0.85rem; }
 .dashboard input[type="search"] {

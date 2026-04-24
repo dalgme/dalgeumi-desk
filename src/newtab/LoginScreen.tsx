@@ -1,47 +1,97 @@
+import { useState } from 'preact/hooks';
 import { supabase } from '../lib/supabase';
 
-export function LoginScreen() {
-  async function loginWithGoogle() {
-    const redirectUri = chrome.identity.getRedirectURL();
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUri,
-        skipBrowserRedirect: true,
-      },
-    });
-    if (error || !data?.url) {
-      console.error('OAuth init failed', error);
-      alert('로그인 실패: ' + (error?.message ?? 'unknown'));
-      return;
-    }
+type Step = 'email' | 'code';
 
-    try {
-      const callback = await chrome.identity.launchWebAuthFlow({
-        url: data.url,
-        interactive: true,
-      });
-      if (!callback) throw new Error('no callback url');
-      const hashOrQuery = callback.split('#')[1] ?? callback.split('?')[1] ?? '';
-      const params = new URLSearchParams(hashOrQuery);
-      const access_token = params.get('access_token');
-      const refresh_token = params.get('refresh_token');
-      if (!access_token || !refresh_token) throw new Error('tokens missing in callback');
-      const { error: setErr } = await supabase.auth.setSession({ access_token, refresh_token });
-      if (setErr) throw setErr;
-    } catch (e) {
-      console.error('launchWebAuthFlow failed', e);
-      alert('로그인 실패: ' + (e as Error).message);
-    }
+export function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [step, setStep] = useState<Step>('email');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function sendCode(e: Event) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: true },
+    });
+    setLoading(false);
+    if (error) setError(error.message);
+    else setStep('code');
+  }
+
+  async function verifyCode(e: Event) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: code.trim(),
+      type: 'email',
+    });
+    setLoading(false);
+    if (error) setError(error.message);
   }
 
   return (
     <div class="login">
       <h1>달그미데스크</h1>
-      <p>팀 내부 공유 북마크 시작페이지</p>
-      <button type="button" onClick={loginWithGoogle}>
-        Google 계정으로 로그인
-      </button>
+      <p class="subtitle">팀 내부 공유 북마크 시작페이지</p>
+
+      {step === 'email' ? (
+        <form onSubmit={sendCode}>
+          <input
+            type="email"
+            placeholder="회사 이메일"
+            value={email}
+            onInput={(e) => setEmail((e.currentTarget as HTMLInputElement).value)}
+            required
+            disabled={loading}
+            autoFocus
+          />
+          <button type="submit" disabled={loading || !email}>
+            {loading ? '전송 중…' : '로그인 코드 받기'}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={verifyCode}>
+          <p class="hint">
+            <strong>{email}</strong> 으로 전송된 6자리 코드를 입력해 주세요.
+          </p>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="6자리 코드"
+            value={code}
+            onInput={(e) => setCode((e.currentTarget as HTMLInputElement).value)}
+            maxLength={6}
+            required
+            disabled={loading}
+            autoFocus
+          />
+          <button type="submit" disabled={loading || code.length !== 6}>
+            {loading ? '확인 중…' : '로그인'}
+          </button>
+          <button
+            type="button"
+            class="link"
+            onClick={() => {
+              setStep('email');
+              setCode('');
+              setError(null);
+            }}
+            disabled={loading}
+          >
+            이메일 변경
+          </button>
+        </form>
+      )}
+
+      {error && <div class="error">{error}</div>}
     </div>
   );
 }

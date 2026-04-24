@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { supabase } from './supabase';
+import { cacheKey, loadCache, saveCache } from './cache';
 
 export interface Bookmark {
   id: string;
@@ -14,17 +15,28 @@ export interface Bookmark {
 
 export function useBookmarks(userId: string) {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+
+    loadCache<Bookmark[]>(cacheKey.bookmarks(userId)).then((cached) => {
+      if (cancelled) return;
+      if (cached) setBookmarks(cached);
+      setHydrated(true);
+    });
+
     supabase
       .from('bookmarks')
       .select('*')
       .order('position', { ascending: true })
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) console.error('bookmarks fetch', error);
-        else setBookmarks((data ?? []) as Bookmark[]);
+        if (error) {
+          console.error('bookmarks fetch', error);
+          return;
+        }
+        setBookmarks((data ?? []) as Bookmark[]);
       });
 
     const ch = supabase
@@ -51,6 +63,11 @@ export function useBookmarks(userId: string) {
     };
   }, [userId]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    saveCache(cacheKey.bookmarks(userId), bookmarks);
+  }, [bookmarks, hydrated, userId]);
+
   async function addBookmark(input: { sectionId: string; title: string; url: string }) {
     const inSection = bookmarks.filter((b) => b.section_id === input.sectionId);
     const position = inSection.length > 0 ? Math.max(...inSection.map((b) => b.position)) + 1 : 0;
@@ -63,12 +80,12 @@ export function useBookmarks(userId: string) {
       favicon_url: faviconUrl,
       position,
     });
-    if (error) console.error('addBookmark', error);
+    if (error) throw error;
   }
 
   async function deleteBookmark(id: string) {
     const { error } = await supabase.from('bookmarks').delete().eq('id', id);
-    if (error) console.error('deleteBookmark', error);
+    if (error) throw error;
   }
 
   return { bookmarks, addBookmark, deleteBookmark };

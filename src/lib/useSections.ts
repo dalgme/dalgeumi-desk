@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'preact/hooks';
 import { supabase } from './supabase';
+import { cacheKey, loadCache, saveCache } from './cache';
 
 export interface Section {
   id: string;
@@ -10,17 +11,28 @@ export interface Section {
 
 export function useSections(userId: string) {
   const [sections, setSections] = useState<Section[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+
+    loadCache<Section[]>(cacheKey.sections(userId)).then((cached) => {
+      if (cancelled) return;
+      if (cached) setSections(cached);
+      setHydrated(true);
+    });
+
     supabase
       .from('sections')
       .select('*')
       .order('position', { ascending: true })
       .then(({ data, error }) => {
         if (cancelled) return;
-        if (error) console.error('sections fetch', error);
-        else setSections((data ?? []) as Section[]);
+        if (error) {
+          console.error('sections fetch', error);
+          return;
+        }
+        setSections((data ?? []) as Section[]);
       });
 
     const ch = supabase
@@ -30,7 +42,8 @@ export function useSections(userId: string) {
         { event: '*', schema: 'public', table: 'sections', filter: `user_id=eq.${userId}` },
         (payload) => {
           setSections((prev) => {
-            if (payload.eventType === 'INSERT') return [...prev, payload.new as Section].sort((a, b) => a.position - b.position);
+            if (payload.eventType === 'INSERT')
+              return [...prev, payload.new as Section].sort((a, b) => a.position - b.position);
             if (payload.eventType === 'UPDATE')
               return prev.map((s) => (s.id === (payload.new as Section).id ? (payload.new as Section) : s));
             if (payload.eventType === 'DELETE')
@@ -47,20 +60,25 @@ export function useSections(userId: string) {
     };
   }, [userId]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    saveCache(cacheKey.sections(userId), sections);
+  }, [sections, hydrated, userId]);
+
   async function addSection(name: string) {
     const position = sections.length > 0 ? Math.max(...sections.map((s) => s.position)) + 1 : 0;
     const { error } = await supabase.from('sections').insert({ user_id: userId, name, position });
-    if (error) console.error('addSection', error);
+    if (error) throw error;
   }
 
   async function renameSection(id: string, name: string) {
     const { error } = await supabase.from('sections').update({ name }).eq('id', id);
-    if (error) console.error('renameSection', error);
+    if (error) throw error;
   }
 
   async function deleteSection(id: string) {
     const { error } = await supabase.from('sections').delete().eq('id', id);
-    if (error) console.error('deleteSection', error);
+    if (error) throw error;
   }
 
   return { sections, addSection, renameSection, deleteSection };
