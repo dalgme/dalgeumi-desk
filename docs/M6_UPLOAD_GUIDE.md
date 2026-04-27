@@ -79,7 +79,7 @@ Chrome 웹스토어는 개인정보 처리방침 URL 을 요구합니다. 이미
   새 탭에 본인의 북마크·섹션을 표시하고, Google 계정(Magic Link OTP)으로 로그인하면 여러 PC·노트북 간에 실시간 동기화됩니다. 오프라인 상태에서도 캐시된 북마크를 사용할 수 있고, 온라인 복귀 시 자동 동기화됩니다.
   
   - 팀 내부용 비공개 배포 (Unlisted)
-  - 이메일 6자리 코드 로그인 (Magic Link OTP)
+  - 이메일 8자리 코드 로그인 (Magic Link OTP)
   - PostgreSQL + Row-Level Security 로 본인 데이터만 접근
   - 실시간 멀티 PC 동기화 (Supabase Realtime)
   - 오프라인 캐시 (IndexedDB)
