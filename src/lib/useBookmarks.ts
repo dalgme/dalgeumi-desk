@@ -88,7 +88,24 @@ export function useBookmarks(userId: string) {
     if (error) throw error;
   }
 
-  return { bookmarks, addBookmark, deleteBookmark };
+  async function updateBookmark(id: string, changes: { title: string; url: string }) {
+    const favicon_url = deriveFavicon(changes.url);
+    const { error } = await supabase
+      .from('bookmarks')
+      .update({ title: changes.title, url: changes.url, favicon_url })
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  async function moveBookmark(id: string, targetSectionId: string) {
+    const { error } = await supabase
+      .from('bookmarks')
+      .update({ section_id: targetSectionId })
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  return { bookmarks, addBookmark, deleteBookmark, updateBookmark, moveBookmark };
 }
 
 function deriveFavicon(rawUrl: string): string | null {
