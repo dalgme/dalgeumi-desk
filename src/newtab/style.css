@@ -119,23 +119,27 @@ body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; over
 .section-card {
   background: var(--card); border: 1px solid var(--border); border-radius: 8px;
   padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.18s, background 0.18s, opacity 0.18s, box-shadow 0.18s, transform 0.18s;
+  will-change: transform, opacity;
 }
 .section-card.drag-over {
   border-color: var(--accent); background: var(--drag-over);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.section-card.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.97);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
 }
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
 }
-.section-drag-handle {
-  cursor: grab; color: var(--muted); font-size: 0.85rem; padding: 0 0.1rem; flex-shrink: 0; user-select: none;
-}
-.section-drag-handle:active { cursor: grabbing; }
-.section-drag-handle:hover { color: var(--text); }
 .section-name {
-  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  font-size: 0.9rem; font-weight: 600;
+  cursor: grab; user-select: none; flex: 1;
 }
 .section-name:hover { color: var(--accent); }
+.section-name:active { cursor: grabbing; }
 
 /* ── 북마크 목록 ── */
 .bookmark-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.1rem; }

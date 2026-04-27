@@ -2,7 +2,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useState, useRef } from 'preact/hooks';
 import { supabase } from '../lib/supabase';
 import { useBookmarks, type Bookmark } from '../lib/useBookmarks';
-import { useSections } from '../lib/useSections';
+import { useSections, type Section } from '../lib/useSections';
 import { useOnlineStatus } from '../lib/useOnlineStatus';
 import { useTabs } from '../lib/useTabs';
 
@@ -30,8 +30,14 @@ export function Dashboard({ session }: Props) {
   const [dragOverSection, setDragOverSection] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmDeleteSectionId, setConfirmDeleteSectionId] = useState<string | null>(null);
+  const [draggingSectionId, setDraggingSectionId] = useState<string | null>(null);
+  const [liveOrder, setLiveOrder] = useState<string[] | null>(null);
 
   const dragPayload = useRef<DragPayload | null>(null);
+
+  const displaySections: Section[] = liveOrder
+    ? liveOrder.map((id) => sections.find((s) => s.id === id)).filter((s): s is Section => s != null)
+    : sections;
 
   function filteredBookmarks(sectionId: string) {
     return bookmarks.filter(
@@ -83,17 +89,40 @@ export function Dashboard({ session }: Props) {
     dragPayload.current = { type: 'tab', ...tab };
   }
 
-  function onSectionDragStart(id: string) {
-    dragPayload.current = { type: 'section', id };
-  }
-
   function onBookmarkDragStart(b: Bookmark) {
     dragPayload.current = { type: 'bookmark', id: b.id, fromSectionId: b.section_id };
   }
 
+  function onSectionNameDragStart(id: string) {
+    setDraggingSectionId(id);
+    dragPayload.current = { type: 'section', id };
+  }
+
+  function onSectionNameDragEnd() {
+    setDraggingSectionId(null);
+    setLiveOrder(null);
+    dragPayload.current = null;
+  }
+
   function onSectionDragOver(e: Event, sectionId: string) {
     (e as DragEvent).preventDefault();
-    setDragOverSection(sectionId);
+    const p = dragPayload.current;
+    if (p?.type === 'section') {
+      if (p.id === sectionId) return;
+      setLiveOrder((prev) => {
+        const base = sections.map((s) => s.id);
+        const order = prev ?? base;
+        const fromIdx = order.indexOf(p.id);
+        const toIdx = order.indexOf(sectionId);
+        if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return prev;
+        const next = [...order];
+        next.splice(fromIdx, 1);
+        next.splice(toIdx, 0, p.id);
+        return next;
+      });
+    } else {
+      setDragOverSection(sectionId);
+    }
   }
 
   function onSectionDragLeave() {
@@ -111,13 +140,11 @@ export function Dashboard({ session }: Props) {
       await handle(() => addBookmark({ sectionId, title: p.title, url: p.url }));
     } else if (p.type === 'bookmark' && p.fromSectionId !== sectionId) {
       await handle(() => moveBookmark(p.id, sectionId));
-    } else if (p.type === 'section' && p.id !== sectionId) {
-      const dragged = sections.find((s) => s.id === p.id);
-      if (!dragged) return;
-      const rest = sections.filter((s) => s.id !== p.id);
-      const targetIdx = rest.findIndex((s) => s.id === sectionId);
-      rest.splice(targetIdx, 0, dragged);
-      await handle(() => reorderSections(rest.map((s) => s.id)));
+    } else if (p.type === 'section') {
+      const order = liveOrder ?? sections.map((s) => s.id);
+      setLiveOrder(null);
+      setDraggingSectionId(null);
+      await handle(() => reorderSections(order));
     }
   }
 
@@ -183,28 +210,27 @@ export function Dashboard({ session }: Props) {
             </div>
           ) : (
             <div class="sections">
-              {sections.map((s) => (
+              {displaySections.map((s) => (
                 <section
                   key={s.id}
-                  class={`section-card${dragOverSection === s.id ? ' drag-over' : ''}`}
+                  class={[
+                    'section-card',
+                    dragOverSection === s.id ? 'drag-over' : '',
+                    draggingSectionId === s.id ? 'is-dragging' : '',
+                  ].filter(Boolean).join(' ')}
                   onDragOver={(e) => onSectionDragOver(e, s.id)}
                   onDragLeave={onSectionDragLeave}
                   onDrop={(e) => onSectionDrop(e, s.id)}
                 >
                   <div class="section-header">
                     <span
-                      class="section-drag-handle"
-                      draggable
-                      onDragStart={() => onSectionDragStart(s.id)}
-                      title="드래그하여 순서 변경"
-                    >
-                      ⠿
-                    </span>
-                    <span
                       role="button"
                       tabIndex={0}
                       class="section-name"
-                      title="클릭하여 이름 변경"
+                      draggable
+                      onDragStart={() => onSectionNameDragStart(s.id)}
+                      onDragEnd={onSectionNameDragEnd}
+                      title="드래그: 순서 변경 / 클릭: 이름 변경"
                       onClick={async () => {
                         const name = prompt('섹션 이름 변경', s.name);
                         if (name && name.trim()) await handle(() => renameSection(s.id, name.trim()));
