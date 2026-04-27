@@ -59,21 +59,21 @@ export function LoginScreen() {
       ) : (
         <form onSubmit={verifyCode}>
           <p class="hint">
-            <strong>{email}</strong> 으로 전송된 6자리 코드를 입력해 주세요.
+            <strong>{email}</strong> 으로 전송된 8자리 코드를 입력해 주세요.
           </p>
           <input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            placeholder="6자리 코드"
+            placeholder="8자리 코드"
             value={code}
             onInput={(e) => setCode((e.currentTarget as HTMLInputElement).value)}
-            maxLength={6}
+            maxLength={8}
             required
             disabled={loading}
             autoFocus
           />
-          <button type="submit" disabled={loading || code.length !== 6}>
+          <button type="submit" disabled={loading || code.length !== 8}>
             {loading ? '확인 중…' : '로그인'}
           </button>
           <button
