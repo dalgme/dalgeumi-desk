@@ -27,6 +27,8 @@ export function Dashboard({ session }: Props) {
   const [editTitle, setEditTitle] = useState('');
   const [editUrl, setEditUrl] = useState('');
   const [dragOverSection, setDragOverSection] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteSectionId, setConfirmDeleteSectionId] = useState<string | null>(null);
 
   const dragPayload = useRef<DragPayload | null>(null);
 
@@ -190,17 +192,33 @@ export function Dashboard({ session }: Props) {
                     >
                       {s.name}
                     </span>
-                    <button
-                      type="button"
-                      class="ghost"
-                      title="섹션 삭제"
-                      onClick={() => {
-                        if (confirm(`"${s.name}" 섹션을 삭제할까요? (북마크도 함께 삭제)`))
-                          handle(() => deleteSection(s.id));
-                      }}
-                    >
-                      ×
-                    </button>
+                    {confirmDeleteSectionId === s.id ? (
+                      <>
+                        <button
+                          type="button"
+                          class="ghost del-confirm"
+                          onClick={() => { setConfirmDeleteSectionId(null); handle(() => deleteSection(s.id)); }}
+                        >
+                          확인
+                        </button>
+                        <button
+                          type="button"
+                          class="ghost"
+                          onClick={() => setConfirmDeleteSectionId(null)}
+                        >
+                          취소
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        class="ghost"
+                        title="섹션 삭제"
+                        onClick={() => setConfirmDeleteSectionId(s.id)}
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
 
                   <ul class="bookmark-list">
@@ -261,17 +279,33 @@ export function Dashboard({ session }: Props) {
                             >
                               ✏️
                             </button>
-                            <button
-                              type="button"
-                              class="ghost"
-                              title="삭제"
-                              onClick={() => {
-                                if (confirm(`"${b.title}" 북마크를 삭제할까요?`))
-                                  handle(() => deleteBookmark(b.id));
-                              }}
-                            >
-                              ×
-                            </button>
+                            {confirmDeleteId === b.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  class="ghost del-confirm"
+                                  onClick={() => { setConfirmDeleteId(null); handle(() => deleteBookmark(b.id)); }}
+                                >
+                                  확인
+                                </button>
+                                <button
+                                  type="button"
+                                  class="ghost"
+                                  onClick={() => setConfirmDeleteId(null)}
+                                >
+                                  취소
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                class="ghost"
+                                title="삭제"
+                                onClick={() => setConfirmDeleteId(b.id)}
+                              >
+                                ×
+                              </button>
+                            )}
                           </div>
                         </li>
                       ),

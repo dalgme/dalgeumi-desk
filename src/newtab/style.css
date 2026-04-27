@@ -171,6 +171,8 @@ body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; over
 /* ── 공통 버튼 ── */
 button.ghost { background: transparent; border: 0; color: var(--muted); cursor: pointer; font-size: 0.95rem; padding: 0 0.2rem; }
 button.ghost:hover { color: var(--text); }
+button.ghost.del-confirm { color: #dc2626; font-size: 0.8rem; }
+button.ghost.del-confirm:hover { color: #991b1b; }
 button.add {
   width: 100%; padding: 0.35rem; background: transparent; border: 1px dashed var(--border);
   border-radius: 4px; color: var(--muted); cursor: pointer; font-size: 0.82rem;

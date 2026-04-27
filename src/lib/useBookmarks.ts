@@ -83,26 +83,33 @@ export function useBookmarks(userId: string) {
     if (error) throw error;
   }
 
+  async function updateBookmark(id: string, changes: { title: string; url: string }) {
+    const favicon_url = deriveFavicon(changes.url);
+    const { data, error } = await supabase
+      .from('bookmarks')
+      .update({ title: changes.title, url: changes.url, favicon_url })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    if (data) setBookmarks((prev) => prev.map((b) => (b.id === id ? (data as Bookmark) : b)));
+  }
+
   async function deleteBookmark(id: string) {
     const { error } = await supabase.from('bookmarks').delete().eq('id', id);
     if (error) throw error;
-  }
-
-  async function updateBookmark(id: string, changes: { title: string; url: string }) {
-    const favicon_url = deriveFavicon(changes.url);
-    const { error } = await supabase
-      .from('bookmarks')
-      .update({ title: changes.title, url: changes.url, favicon_url })
-      .eq('id', id);
-    if (error) throw error;
+    setBookmarks((prev) => prev.filter((b) => b.id !== id));
   }
 
   async function moveBookmark(id: string, targetSectionId: string) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bookmarks')
       .update({ section_id: targetSectionId })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
     if (error) throw error;
+    if (data) setBookmarks((prev) => prev.map((b) => (b.id === id ? (data as Bookmark) : b)));
   }
 
   return { bookmarks, addBookmark, deleteBookmark, updateBookmark, moveBookmark };
