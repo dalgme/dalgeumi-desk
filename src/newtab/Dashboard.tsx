@@ -12,11 +12,12 @@ interface Props {
 
 type DragPayload =
   | { type: 'tab'; title: string; url: string; favIconUrl?: string }
-  | { type: 'bookmark'; id: string; fromSectionId: string };
+  | { type: 'bookmark'; id: string; fromSectionId: string }
+  | { type: 'section'; id: string };
 
 export function Dashboard({ session }: Props) {
   const userId = session.user.id;
-  const { sections, addSection, renameSection, deleteSection } = useSections(userId);
+  const { sections, addSection, renameSection, deleteSection, reorderSections } = useSections(userId);
   const { bookmarks, addBookmark, deleteBookmark, updateBookmark, moveBookmark } = useBookmarks(userId);
   const tabs = useTabs();
   const online = useOnlineStatus();
@@ -82,6 +83,10 @@ export function Dashboard({ session }: Props) {
     dragPayload.current = { type: 'tab', ...tab };
   }
 
+  function onSectionDragStart(id: string) {
+    dragPayload.current = { type: 'section', id };
+  }
+
   function onBookmarkDragStart(b: Bookmark) {
     dragPayload.current = { type: 'bookmark', id: b.id, fromSectionId: b.section_id };
   }
@@ -106,6 +111,13 @@ export function Dashboard({ session }: Props) {
       await handle(() => addBookmark({ sectionId, title: p.title, url: p.url }));
     } else if (p.type === 'bookmark' && p.fromSectionId !== sectionId) {
       await handle(() => moveBookmark(p.id, sectionId));
+    } else if (p.type === 'section' && p.id !== sectionId) {
+      const dragged = sections.find((s) => s.id === p.id);
+      if (!dragged) return;
+      const rest = sections.filter((s) => s.id !== p.id);
+      const targetIdx = rest.findIndex((s) => s.id === sectionId);
+      rest.splice(targetIdx, 0, dragged);
+      await handle(() => reorderSections(rest.map((s) => s.id)));
     }
   }
 
@@ -180,6 +192,14 @@ export function Dashboard({ session }: Props) {
                   onDrop={(e) => onSectionDrop(e, s.id)}
                 >
                   <div class="section-header">
+                    <span
+                      class="section-drag-handle"
+                      draggable
+                      onDragStart={() => onSectionDragStart(s.id)}
+                      title="드래그하여 순서 변경"
+                    >
+                      ⠿
+                    </span>
                     <span
                       role="button"
                       tabIndex={0}

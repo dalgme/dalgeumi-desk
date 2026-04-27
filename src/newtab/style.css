@@ -127,6 +127,11 @@ body { margin: 0; background: var(--bg); color: var(--text); height: 100vh; over
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
 }
+.section-drag-handle {
+  cursor: grab; color: var(--muted); font-size: 0.85rem; padding: 0 0.1rem; flex-shrink: 0; user-select: none;
+}
+.section-drag-handle:active { cursor: grabbing; }
+.section-drag-handle:hover { color: var(--text); }
 .section-name {
   font-size: 0.9rem; font-weight: 600; cursor: pointer;
 }

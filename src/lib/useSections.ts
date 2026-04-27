@@ -81,5 +81,19 @@ export function useSections(userId: string) {
     if (error) throw error;
   }
 
-  return { sections, addSection, renameSection, deleteSection };
+  async function reorderSections(orderedIds: string[]) {
+    setSections((prev) => {
+      const map = new Map(prev.map((s) => [s.id, s]));
+      return orderedIds.map((id, idx) => ({ ...map.get(id)!, position: idx }));
+    });
+    const results = await Promise.all(
+      orderedIds.map((id, idx) =>
+        supabase.from('sections').update({ position: idx }).eq('id', id),
+      ),
+    );
+    const err = results.find((r) => r.error)?.error;
+    if (err) throw err;
+  }
+
+  return { sections, addSection, renameSection, deleteSection, reorderSections };
 }
